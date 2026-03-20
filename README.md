@@ -23,6 +23,8 @@ Questo repository installa e configura in automatico:
 
 <img width="302" height="399" alt="nexus" src="https://github.com/user-attachments/assets/8b4a8b6f-4050-4015-a9d1-3f626b3de48f" />
 
+Nome Canale: Nexus
+Secret Key: a45768ab48e203498edbc11b35cdfbd7
 
 
 
