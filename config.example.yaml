@@ -1,0 +1,33 @@
+gateway_id: NEXUS-ITALIA-[sigla provincia]
+site_name: "NEXUS-ITALIA [provincia]"
+region: [regione]
+mesh_id: mesh-[provincia]
+radio_band: "868"
+channel_name: NEXUS
+channel_number: 1
+protocol_version: "1.0"
+
+meshcli:
+  command: /opt/nexus-gateway/.venv/bin/meshcli
+  serial_port: /dev/ttyUSB0
+  baudrate: 115200
+  timeout_sec: 10
+  mode: serial
+
+mqtt:
+  host: mqtt.example.org
+  port: 1883
+  username: NEXUS-ITALIA-[sigla provincia]
+  password: [password da richiedere a info@meshcoreitalia.it]
+  keepalive: 30
+  tls: false
+  uplink_topic: nexus/v1/uplink
+  downlink_topic: nexus/v1/downlink/NEXUS-ITALIA-[sigla provincia]
+  heartbeat_topic: nexus/v1/heartbeat/NEXUS-ITALIA-[sigla provincia]
+  status_topic: nexus/v1/status/NEXUS-ITALIA-[sigla provincia]
+
+runtime:
+  dedupe_ttl_sec: 180
+  heartbeat_interval_sec: 30
+  poll_interval_sec: 5
+  log_level: INFO

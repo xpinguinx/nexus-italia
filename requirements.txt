@@ -1,0 +1,3 @@
+paho-mqtt>=2.1.0,<3
+PyYAML>=6.0.2,<7
+meshcore-cli>=0.3.4

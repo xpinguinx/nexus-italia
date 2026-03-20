@@ -1,0 +1,17 @@
+[Unit]
+Description=NEXUS-ITALIA Gateway Service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=__SERVICE_USER__
+Group=__SERVICE_USER__
+WorkingDirectory=/opt/nexus-gateway
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/opt/nexus-gateway/.venv/bin/python -m nexus_gateway.main --config /opt/nexus-gateway/config.yaml
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
