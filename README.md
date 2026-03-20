@@ -1,6 +1,6 @@
 # NEXUS-ITALIA Gateway Installer
 
-Installer automatico per gateway **NEXUS-ITALIA** basato su Raspberry Pi + Companion USB MeshCore.
+Installer automatico per gateway **NEXUS-ITALIA** basato su Raspberry Pi0 2W e Companion USB MeshCore.
 
 Questo repository installa e configura in automatico:
 
@@ -13,18 +13,20 @@ Questo repository installa e configura in automatico:
 
 ## Requisiti
 
-- Raspberry Pi OS / Debian / Ubuntu
+- Raspberry Pi OS / Debian / Ubuntu (NO desktop)
 - accesso Internet
 - Companion USB MeshCore collegato
-- credenziali MQTT già create sul broker
+- credenziali MQTT da richiedere all'indirizzo email info@meshcoreitalia.it
 
 ## Installazione rapida
 
 Clona il repository e lancia lo script come root:
 
 ```bash
-git clone https://github.com/TUO-ACCOUNT/nexus-gateway-installer.git
-cd nexus-gateway-installer
+sudo apt update
+sudo apt install -y git
+git clone https://github.com/xpinguinx/nexus-italia.git
+cd nexus-italia
 sudo bash install_gateway.sh
 ```
 
@@ -86,18 +88,3 @@ sudo -u <utente-servizio> /opt/nexus-gateway/.venv/bin/meshcli -j -s /dev/ttyUSB
 sudo -u <utente-servizio> /opt/nexus-gateway/.venv/bin/meshcli -j -s /dev/ttyUSB0 -b 115200 sync_msgs
 ```
 
-## Pubblicazione su GitHub
-
-1. Crea un nuovo repository vuoto su GitHub.
-2. Copia questi file nel repository.
-3. Esegui:
-
-```bash
-git init
-git add .
-git commit -m "Add automatic gateway installer"
-git branch -M main
-git remote add origin git@github.com:TUO-ACCOUNT/nexus-gateway-installer.git
-git push -u origin main
-```
-"# nexus-italia" 
