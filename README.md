@@ -18,6 +18,14 @@ Questo repository installa e configura in automatico:
 - Companion USB MeshCore collegato
 - credenziali MQTT da richiedere all'indirizzo email info@meshcoreitalia.it
 
+
+## Creazione canale NEXUS con relativa Secret Key
+
+<img width="302" height="399" alt="nexus" src="https://github.com/user-attachments/assets/8b4a8b6f-4050-4015-a9d1-3f626b3de48f" />
+
+
+
+
 ## Installazione rapida
 
 Clona il repository e lancia lo script come root:
