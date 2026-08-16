@@ -87,7 +87,12 @@ rebuild_venv_and_app_files() {
   rm -rf "$APP_DIR/nexus_gateway"
   mkdir -p "$APP_DIR/nexus_gateway"
   cp -r nexus_gateway "$APP_DIR/"
-  cp -r scripts "$APP_DIR/"
+  # scripts/ non va copiato in $APP_DIR: non fa parte del servizio in
+  # esecuzione. migrate_config.py viene invocato solo da questo script,
+  # dalla cartella del repo clonato (vedi migrate_config() piu' sotto);
+  # probe_meshcore.py, se serve un test manuale dopo la migrazione, si
+  # esegue allo stesso modo da li'.
+  rm -rf "$APP_DIR/scripts"  # pulizia di un eventuale scripts/ da installazioni precedenti
   cp requirements.txt "$APP_DIR/"
   cp config.example.yaml "$APP_DIR/"
 

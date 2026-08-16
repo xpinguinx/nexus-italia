@@ -80,12 +80,12 @@ mosquitto_sub -h 127.0.0.1 -p 1883 -u router -P 'PASSWORD_ROUTER' -t 'nexus/v1/#
 
 ## 8. Test radio locale
 
-Il progetto non dipende più da `meshcli`: i test manuali passano dallo script `scripts/probe_meshcore.py` (incluso nell'installazione), che usa direttamente la libreria `meshcore`.
+Il progetto non dipende più da `meshcli`: i test manuali passano dallo script `scripts/probe_meshcore.py`, che usa direttamente la libreria `meshcore`. Non fa parte del servizio installato: si lancia dalla cartella del repository clonato (`nexus-italia`, dove hai eseguito `install_gateway.sh`), usando l'interprete Python del virtualenv già installato in `/opt/nexus-gateway/.venv`.
 
-Lettura canali:
+Lettura canali (dalla cartella `nexus-italia`):
 
 ```bash
-sudo -u <utente-servizio> /opt/nexus-gateway/.venv/bin/python /opt/nexus-gateway/scripts/probe_meshcore.py --mode serial --serial-port /dev/ttyUSB0 --baudrate 115200
+sudo -u <utente-servizio> /opt/nexus-gateway/.venv/bin/python scripts/probe_meshcore.py --mode serial --serial-port /dev/ttyUSB0 --baudrate 115200
 ```
 
 (sostituisci `--mode serial --serial-port ... --baudrate ...` con `--mode tcp --host ... --port ...` se il companion è in TCP)
@@ -93,5 +93,5 @@ sudo -u <utente-servizio> /opt/nexus-gateway/.venv/bin/python /opt/nexus-gateway
 Invio di un messaggio di test sul canale:
 
 ```bash
-sudo -u <utente-servizio> /opt/nexus-gateway/.venv/bin/python /opt/nexus-gateway/scripts/probe_meshcore.py --mode serial --serial-port /dev/ttyUSB0 --send-text "test nexus" --channel 1
+sudo -u <utente-servizio> /opt/nexus-gateway/.venv/bin/python scripts/probe_meshcore.py --mode serial --serial-port /dev/ttyUSB0 --send-text "test nexus" --channel 1
 ```

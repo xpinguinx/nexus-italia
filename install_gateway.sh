@@ -125,7 +125,10 @@ configure_tcp() {
 # script Python che usa direttamente la libreria meshcore_py (la stessa usata
 # dal gateway in nexus_gateway/meshcore_adapter.py) invece del binario meshcli.
 probe_channels() {
-  local probe_script="$APP_DIR/scripts/probe_meshcore.py"
+  # Lo script vive nella cartella del repository clonato (non serve
+  # installarlo in $APP_DIR: non fa parte del servizio in esecuzione, serve
+  # solo qui e per eventuali test manuali successivi da questa stessa cartella).
+  local probe_script="$REPO_DIR/scripts/probe_meshcore.py"
   if [[ ! -x "$APP_DIR/.venv/bin/python" || ! -f "$probe_script" ]]; then
     return 0
   fi
@@ -136,7 +139,7 @@ probe_channels() {
   else
     cmd="$cmd --serial-port $SERIAL_PORT --baudrate $BAUDRATE"
   fi
-  if su - "$SERVICE_USER" -c "$cmd"; then
+  if su - "$SERVICE_USER" -c "$cmd" </dev/null; then
     true
   else
     log "Lettura canali non riuscita ora. Continuo comunque con l'installazione."
@@ -220,7 +223,10 @@ install_app_files() {
   log "Copio i file applicativi in $APP_DIR"
   mkdir -p "$APP_DIR/nexus_gateway"
   cp -r nexus_gateway "$APP_DIR/"
-  cp -r scripts "$APP_DIR/"
+  # scripts/ (probe_meshcore.py, migrate_config.py) non va copiato in
+  # $APP_DIR: non fa parte del servizio in esecuzione. probe_meshcore.py
+  # viene usato dal probe qui sotto e per eventuali test manuali successivi
+  # direttamente dalla cartella del repo clonato (vedi README/INSTALL).
   cp requirements.txt "$APP_DIR/"
   cp config.example.yaml "$APP_DIR/"
   python3 -m venv "$APP_DIR/.venv"
@@ -249,9 +255,9 @@ start_service() {
 print_summary() {
   local test_cmd
   if [[ "$CONN_MODE" == "tcp" ]]; then
-    test_cmd="$APP_DIR/.venv/bin/python $APP_DIR/scripts/probe_meshcore.py --mode tcp --host $MESHCORE_HOST --port $MESHCORE_PORT"
+    test_cmd="$APP_DIR/.venv/bin/python $REPO_DIR/scripts/probe_meshcore.py --mode tcp --host $MESHCORE_HOST --port $MESHCORE_PORT"
   else
-    test_cmd="$APP_DIR/.venv/bin/python $APP_DIR/scripts/probe_meshcore.py --mode serial --serial-port $SERIAL_PORT --baudrate $BAUDRATE"
+    test_cmd="$APP_DIR/.venv/bin/python $REPO_DIR/scripts/probe_meshcore.py --mode serial --serial-port $SERIAL_PORT --baudrate $BAUDRATE"
   fi
   cat <<EOF
 
@@ -279,6 +285,7 @@ EOF
 main() {
   require_root
   cd "$(dirname "$0")"
+  REPO_DIR="$(pwd)"
   select_user
   install_packages
   install_app_files

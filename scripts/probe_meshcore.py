@@ -47,6 +47,22 @@ async def _connect(args: argparse.Namespace) -> MeshCore:
     return mc
 
 
+def _jsonify(value):
+    """Rende un valore compatibile con json.dumps.
+
+    Il companion puo' restituire campi binari (es. il secret del canale
+    come bytes grezzi): json.dumps non li accetta cosi' come sono, quindi
+    li convertiamo in esadecimale, ricorsivamente dentro dict/list.
+    """
+    if isinstance(value, (bytes, bytearray)):
+        return value.hex()
+    if isinstance(value, dict):
+        return {k: _jsonify(v) for k, v in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_jsonify(v) for v in value]
+    return value
+
+
 async def _probe_channels(mc: MeshCore, max_channels: int) -> list:
     channels = []
     for idx in range(max_channels):
@@ -61,7 +77,7 @@ async def _probe_channels(mc: MeshCore, max_channels: int) -> list:
             continue
         entry = dict(payload) if isinstance(payload, dict) else {"raw": payload}
         entry["channel_idx"] = idx
-        channels.append(entry)
+        channels.append(_jsonify(entry))
     return channels
 
 
@@ -79,7 +95,7 @@ async def main_async(args: argparse.Namespace) -> int:
             print(f"Messaggio inviato sul canale {args.channel}: {args.send_text!r}")
         else:
             channels = await _probe_channels(mc, args.max_channels)
-            print(json.dumps(channels, ensure_ascii=False, indent=2))
+            print(json.dumps(channels, ensure_ascii=False, indent=2, default=str))
     finally:
         try:
             await mc.disconnect()

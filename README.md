@@ -117,22 +117,22 @@ Dopo l'installazione, se il Companion non viene visto subito dal servizio, può 
 
 ## Test manuali MeshCore
 
-Il progetto non dipende più da `meshcore-cli`/binario `meshcli`: i test manuali passano dallo script `scripts/probe_meshcore.py`, incluso nell'installazione, che usa direttamente la libreria `meshcore` (la stessa usata dal gateway).
+Il progetto non dipende più da `meshcore-cli`/binario `meshcli`: i test manuali passano dallo script `scripts/probe_meshcore.py`, che usa direttamente la libreria `meshcore` (la stessa usata dal gateway). Non fa parte del servizio installato (non viene copiato in `/opt/nexus-gateway`): si esegue dalla cartella del repository clonato (`nexus-italia`, dove hai lanciato `install_gateway.sh`), usando però l'interprete Python del virtualenv già installato in `/opt/nexus-gateway/.venv`, che ha la libreria `meshcore`.
 
-Lettura canali - seriale:
+Lettura canali - seriale (dalla cartella `nexus-italia`):
 
 ```bash
-sudo -u <utente-servizio> /opt/nexus-gateway/.venv/bin/python /opt/nexus-gateway/scripts/probe_meshcore.py --mode serial --serial-port /dev/ttyUSB0 --baudrate 115200
+sudo -u <utente-servizio> /opt/nexus-gateway/.venv/bin/python scripts/probe_meshcore.py --mode serial --serial-port /dev/ttyUSB0 --baudrate 115200
 ```
 
 Lettura canali - TCP:
 
 ```bash
-sudo -u <utente-servizio> /opt/nexus-gateway/.venv/bin/python /opt/nexus-gateway/scripts/probe_meshcore.py --mode tcp --host 192.168.1.50 --port 5000
+sudo -u <utente-servizio> /opt/nexus-gateway/.venv/bin/python scripts/probe_meshcore.py --mode tcp --host 192.168.1.50 --port 5000
 ```
 
 Invio di un messaggio di test sul canale (radio):
 
 ```bash
-sudo -u <utente-servizio> /opt/nexus-gateway/.venv/bin/python /opt/nexus-gateway/scripts/probe_meshcore.py --mode serial --serial-port /dev/ttyUSB0 --send-text "test nexus" --channel 1
+sudo -u <utente-servizio> /opt/nexus-gateway/.venv/bin/python scripts/probe_meshcore.py --mode serial --serial-port /dev/ttyUSB0 --send-text "test nexus" --channel 1
 ```
