@@ -1,18 +1,25 @@
 #!/usr/bin/env python3
-"""Diagnostic helper used by install_gateway.sh to read the companion's
-channel table during installation and for manual troubleshooting.
+"""Diagnostic helper used by install_gateway.sh / migrate_gateway.sh to read
+the companion's channel table, and for manual troubleshooting.
 
 The project no longer depends on meshcore-cli / the `meshcli` binary: the
 gateway talks to the companion directly through the meshcore_py library
-(see nexus_gateway/meshcore_adapter.py). This script is the equivalent of
-the old `meshcli -j -s <port> -b <baud> get_channels` call, but built on
-that same library so it works for both serial and tcp companions.
-
-Not part of the running gateway service - install-time / troubleshooting
-tool only. Usage:
+(see nexus_gateway/meshcore_adapter.py). This script covers the same manual
+checks the old `meshcli` binary was used for, on that same library, working
+for both serial and tcp companions:
 
   probe_meshcore.py --mode serial --serial-port /dev/ttyUSB0 --baudrate 115200
+      (equivalente al vecchio: meshcli -j -s <porta> -b <baud> get_channels)
+
   probe_meshcore.py --mode tcp --host 192.168.1.50 --port 5000
+      (stessa lettura canali, ma su companion raggiungibile via rete)
+
+  probe_meshcore.py --mode serial --serial-port /dev/ttyUSB0 \\
+      --send-text "test nexus" --channel 1
+      (equivalente al vecchio: meshcli -j -s <porta> -b <baud> chan 1 "test nexus")
+
+Not part of the running gateway service - install-time / troubleshooting
+tool only.
 """
 
 from __future__ import annotations
@@ -58,16 +65,26 @@ async def _probe_channels(mc: MeshCore, max_channels: int) -> list:
     return channels
 
 
+async def _send_text(mc: MeshCore, channel: int, text: str) -> None:
+    # Stessa chiamata usata da nexus_gateway/meshcore_adapter.py
+    # (MeshCoreAdapter.send_channel_message) per il downlink MQTT->mesh.
+    await mc.commands.send_chan_msg(chan=channel, msg=text)
+
+
 async def main_async(args: argparse.Namespace) -> int:
     mc = await _connect(args)
     try:
-        channels = await _probe_channels(mc, args.max_channels)
+        if args.send_text is not None:
+            await _send_text(mc, args.channel, args.send_text)
+            print(f"Messaggio inviato sul canale {args.channel}: {args.send_text!r}")
+        else:
+            channels = await _probe_channels(mc, args.max_channels)
+            print(json.dumps(channels, ensure_ascii=False, indent=2))
     finally:
         try:
             await mc.disconnect()
         except Exception:
             pass
-    print(json.dumps(channels, ensure_ascii=False, indent=2))
     return 0
 
 
@@ -82,11 +99,20 @@ def parse_args(argv=None) -> argparse.Namespace:
     parser.add_argument("--port", type=int, help="Porta TCP del companion (richiesto con --mode tcp)")
     parser.add_argument("--timeout", type=float, default=10.0, help="Timeout comandi (secondi)")
     parser.add_argument("--max-channels", type=int, default=8)
+    parser.add_argument(
+        "--send-text",
+        help="Invece di leggere i canali, invia questo testo sul canale --channel (test radio)",
+    )
+    parser.add_argument(
+        "--channel", type=int, help="Numero canale per --send-text (richiesto se --send-text e' usato)"
+    )
     args = parser.parse_args(argv)
     if args.mode == "serial" and not args.serial_port:
         parser.error("--serial-port e' richiesto con --mode serial")
     if args.mode == "tcp" and (not args.host or not args.port):
         parser.error("--host e --port sono richiesti con --mode tcp")
+    if args.send_text is not None and args.channel is None:
+        parser.error("--channel e' richiesto insieme a --send-text")
     return args
 
 
@@ -95,7 +121,7 @@ def main() -> None:
     try:
         rc = asyncio.run(main_async(args))
     except Exception as exc:
-        print(f"Errore durante la lettura canali: {exc}", file=sys.stderr)
+        print(f"Errore: {exc}", file=sys.stderr)
         sys.exit(1)
     sys.exit(rc)
 
