@@ -39,9 +39,6 @@ class GatewayMqttClient:
     def publish_json(self, topic: str, payload: dict) -> None:
         self.client.publish(topic, json.dumps(payload, ensure_ascii=False), qos=1)
 
-    def publish_text(self, topic: str, payload: str) -> None:
-        self.client.publish(topic, payload, qos=1)
-
     def _on_connect(self, client: mqtt.Client, userdata: object, flags: object, reason_code: object, properties: object) -> None:
         logger.info("mqtt connected", extra={"extra": {"reason_code": str(reason_code)}})
         client.subscribe(self.config.downlink_topic, qos=1)
