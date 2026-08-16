@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import asyncio
 
 from .config import load_config
 from .logging_utils import setup_logging
@@ -13,7 +14,7 @@ def main() -> None:
     args = parser.parse_args()
     config = load_config(args.config)
     setup_logging(config.runtime.log_level)
-    GatewayService(config).start()
+    asyncio.run(GatewayService(config).start())
 
 
 if __name__ == "__main__":

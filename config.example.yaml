@@ -5,14 +5,59 @@ mesh_id: mesh-[provincia]
 radio_band: "868"
 channel_name: NEXUS
 channel_number: 1
+channel_scope: "it-lo"
+channel_secret: "a45768ab48e203498edbc11b35cdfbd7"
+path_hash_mode: 1
 protocol_version: "1.0"
 
-meshcli:
-  command: /opt/nexus-gateway/.venv/bin/meshcli
+# Connessione al companion MeshCore. Sono supportate due modalita':
+#
+#   mode: serial (default) -> richiede serial_port (+ baudrate opzionale,
+#         default 115200). E' la modalita' storica, con il device collegato
+#         via USB (es. /dev/ttyUSB0 o /dev/nexus-gateway).
+#
+#   mode: tcp -> richiede host e port. Usare quando il companion e'
+#         raggiungibile via rete (stesso tipo di connessione usata da
+#         trace-mon), ad es. un device MeshCore con firmware TCP/WiFi
+#         abilitato, o un serial-to-network bridge (es. ser2net/socat)
+#         davanti al ttyUSB del device.
+#
+# Parametri di resilienza della connessione (validi per entrambe le
+# modalita', opzionali - i valori sotto sono i default se omessi):
+#
+#   auto_reconnect: true          -> lascia che meshcore_py riprovi da solo
+#                                     a riconnettersi su un drop del link,
+#                                     senza dover riavviare tutto il servizio
+#   max_reconnect_attempts: 20    -> tentativi di auto_reconnect (delay fisso
+#                                     di 1s tra un tentativo e l'altro nella
+#                                     libreria) prima di arrendersi
+#   command_timeout_sec: 10       -> timeout per ogni comando verso il
+#                                     companion (get_uptime, invio messaggi,
+#                                     ...), cosi' un link morto fallisce in
+#                                     fretta invece di restare appeso
+#
+# Se anche l'auto-reconnect della libreria si arrende (o non e' abilitato),
+# il watchdog del gateway (vedi runtime.watchdog_failure_threshold sotto)
+# forza comunque una riconnessione completa senza attendere systemd.
+#
+# Esempio modalita' seriale (attuale):
+meshcore:
   serial_port: /dev/ttyUSB0
   baudrate: 115200
-  timeout_sec: 10
   mode: serial
+  auto_reconnect: true
+  max_reconnect_attempts: 20
+  command_timeout_sec: 10
+
+# Esempio modalita' TCP (commentato: rimuovere il commento e compilare
+# host/port, lasciando un solo blocco "meshcore" attivo):
+# meshcore:
+#   mode: tcp
+#   host: 192.168.1.50
+#   port: 5000
+#   auto_reconnect: true
+#   max_reconnect_attempts: 20
+#   command_timeout_sec: 10
 
 mqtt:
   host: mqtt.example.org
@@ -31,3 +76,7 @@ runtime:
   heartbeat_interval_sec: 30
   poll_interval_sec: 5
   log_level: INFO
+  # Numero di controlli di salute del companion (ogni heartbeat_interval_sec)
+  # falliti consecutivamente prima che il watchdog forzi una riconnessione
+  # completa invece di limitarsi a loggare un warning. Default: 3.
+  watchdog_failure_threshold: 3
